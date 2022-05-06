@@ -127,6 +127,7 @@ namespace MySFformat
             //1.97： added experimental Sekiro and Elden Ring .dcx Support
                 //1.971: repair minor flver crash problem
         public static string[] argments = { };
+        public static bool IsExportMode = false;
         /// <summary>
         /// 应用程序的主入口点。
         /// </summary>
@@ -137,6 +138,13 @@ namespace MySFformat
              Application.SetCompatibleTextRenderingDefault(false);
              Application.Run(new Form1());*/
             argments = args;
+
+            if(args.Length == 2)
+            {
+                IsExportMode = true;
+                targetFlver = FLVER.Read(args[0]);
+                ExportFBX();
+            }
             //ExportFBX();
             Console.WriteLine("Hello!");
             string assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -3581,7 +3589,7 @@ namespace MySFformat
             var openFileDialog2 = new SaveFileDialog();
             openFileDialog2.FileName = "Exported.dae";
             string res = "";
-            if (openFileDialog2.ShowDialog() == DialogResult.OK)
+            if (IsExportMode || openFileDialog2.ShowDialog() == DialogResult.OK)
             {
                 try
                 {
@@ -3648,7 +3656,7 @@ namespace MySFformat
                         {
                             foreach (var arr in fs.GetFaces())
                             {
-                                meshNew.Faces.Add(new Face(new int[] { (int)arr[0], (int)arr[1],(int)arr[2] }));
+                                meshNew.Faces.Add(new Face(new int[] { (int)arr[2], (int)arr[1],(int)arr[0] }));
                             }
                         }
 
@@ -3666,6 +3674,12 @@ namespace MySFformat
 
 
                     AssimpContext exportor = new AssimpContext();
+                    if(IsExportMode)
+                    {
+                        string ExportFileName = argments[1];
+                        exportor.ExportFile(s, ExportFileName, "collada");
+                        Environment.Exit(0);
+                    }
                     exportor.ExportFile(s, openFileDialog2.FileName, "collada");
 
                     MessageBox.Show("Export successful!", "Info");
